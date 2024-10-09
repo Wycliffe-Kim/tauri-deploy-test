@@ -36,6 +36,9 @@ jobs:
 
     runs-on: ${{ matrix.platform }}
     steps:
+      - name: Set up GITHUB_REF_NAME
+        run: echo "GITHUB_REF_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
 
       # - name: install dependencies (ubuntu only)
@@ -82,7 +85,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REF_NAME: $GITHUB_REF_NAME
+          GITHUB_REF_NAME: ${{ env.GITHUB_REF_NAME }}
         with:
           # the action automatically replaces \_\_VERSION\_\_ with the app version.
           tagName: ${{ env.GITHUB_REF_NAME }}
