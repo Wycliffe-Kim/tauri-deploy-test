@@ -91,8 +91,7 @@ jobs:
 
       - name: Rename Files with Tag Version
         run: |
-          mv src-tauri/target/release/bundle/macos/my-app.app.tar.gz src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
-          mv src-tauri/target/release/bundle/macos/my-app.dmg src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.dmg
+          mv src-tauri/target/release/bundle/dmg/tauri-deploy-test_0.1.0_aarch64.dmg src-tauri/target/release/bundle/dmg/tauri-deploy-test_${{ env.GITHUB_REF_NAME }}.dmg
 
       - name: Create GitHub Release
         id: create_release
@@ -112,16 +111,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.dmg
+          asset_path: src-tauri/target/release/bundle/dmg/tauri-deploy-test_${{ env.GITHUB_REF_NAME }}.dmg
           asset_name: my-app_${{ env.GITHUB_REF_NAME }}.dmg
-          asset_content_type: application/octet-stream
-
-      - name: Upload .app.tar.gz Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
-          asset_name: my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
           asset_content_type: application/octet-stream
