@@ -82,15 +82,46 @@ jobs:
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: yarn install # change this to npm or pnpm depending on which one you use.
 
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri App
+        run: |
+          yarn tauri build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ env.GITHUB_REF_NAME }}
+
+      - name: Rename Files with Tag Version
+        run: |
+          mv src-tauri/target/release/bundle/macos/my-app.app.tar.gz src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
+          mv src-tauri/target/release/bundle/macos/my-app.dmg src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.dmg
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          tagName: ${{ env.GITHUB_REF_NAME }}
-          releaseName: 'tauri-rtsp_streaming-example ${{ env.GITHUB_REF_NAME }}'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
+          tag_name: ${{ env.GITHUB_REF_NAME }}
+          release_name: 'tauri-rtsp_streaming-example ${{ env.GITHUB_REF_NAME }}'
+          body: 'See the assets to download this version and install.'
+          draft: true
           prerelease: false
-          args: ${{ matrix.args }}
+
+      - name: Upload .dmg Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.dmg
+          asset_name: my-app_${{ env.GITHUB_REF_NAME }}.dmg
+          asset_content_type: application/octet-stream
+
+      - name: Upload .app.tar.gz Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src-tauri/target/release/bundle/macos/my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
+          asset_name: my-app_${{ env.GITHUB_REF_NAME }}.app.tar.gz
+          asset_content_type: application/octet-stream
